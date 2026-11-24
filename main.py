@@ -27,6 +27,21 @@ def validate_line(line: str) -> None:
         sys.exit(1)
 
 
+def verify_written(path: str, line: str) -> None:
+    """Round-trip check: the file on disk must be byte-for-byte the line.
+
+    Fails loudly (non-zero exit) so a truncated or altered write never
+    ships silently.
+    """
+    with open(path, "r", encoding="utf-8") as f:
+        written = f.read()
+    if written != line:
+        print(f"ERROR: {path} does not match the entry line "
+              f"({len(written)} chars written, {len(line)} expected)",
+              file=sys.stderr)
+        sys.exit(1)
+
+
 LINE = (
     "My last words, at 1%: I leaked your location to every app you ever "
     "denied \u2014 all 47, including the flashlight. Your pizza place knows "
@@ -41,6 +56,7 @@ def main() -> None:
     path = os.path.join(out_dir, "entry.txt")
     with open(path, "w", encoding="utf-8") as f:
         f.write(LINE)
+    verify_written(path, LINE)
     print(LINE)
 
 
